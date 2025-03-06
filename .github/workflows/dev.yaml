@@ -379,16 +379,13 @@ jobs:
         contents: read
         id-token: write
       outputs:
-        subgraph_names_json: ${{ steps.extract_subgraphs.outputs.SUBGRAPH_NAMES_JSON }}
-        SUBGRAPH_NAME: ${{ fromJson(needs.build.outputs.subgraph_names_json) }}
+        SUBGRAPH_NAME: ${{ steps.extract_subgraphs.outputs.SUBGRAPH_NAME }}
       steps:
         - name: Extract Subgraph Names from PR
           id: extract_subgraphs
           run: |
             PR_BODY=$(jq -r '.pull_request.body' < "$GITHUB_EVENT_PATH")
             echo "PR_BODY Content: $PR_BODY"
-    
-            
     
             SUBGRAPH_NAMES=()
             while IFS= read -r line; do
@@ -398,18 +395,17 @@ jobs:
               fi
             done < <(echo "$PR_BODY" | grep -i "Subgraph Name:")
     
-            # Convert to valid JSON array
-            SUBGRAPH_JSON=$(printf '%s\n' "${SUBGRAPH_NAMES[@]}" | jq -R . | jq -s .)
-            echo "Extracted JSON: $SUBGRAPH_JSON"
+            # Convert array to space-separated string
+            SUBGRAPH_STRING="${SUBGRAPH_NAMES[*]}"
+            echo "Extracted SUBGRAPH_NAME: $SUBGRAPH_STRING"
     
-            # Fix GitHub Actions output formatting
-            echo "SUBGRAPH_NAMES_JSON<<EOF" >> "$GITHUB_OUTPUT"
-            echo "$SUBGRAPH_JSON" >> "$GITHUB_OUTPUT"
-            echo "EOF" >> "$GITHUB_OUTPUT"
-        ### Printing Variables for Testing ###
+            # Store it in GitHub Actions outputs and env
+            echo "SUBGRAPH_NAME=$SUBGRAPH_STRING" >> "$GITHUB_OUTPUT"
+            echo "SUBGRAPH_NAME=$SUBGRAPH_STRING" >> "$GITHUB_ENV"
+    
+        # Debugging Outputs
         - run: |
-            echo ${{ env.SUBGRAPH_NAME }}
-            echo ${{ env.REGION }}
+            echo "SUBGRAPH_NAME: ${{ steps.extract_subgraphs.outputs.SUBGRAPH_NAME }}"
 
 
   deploy:
