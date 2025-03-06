@@ -63,7 +63,7 @@ jobs:
           # Debugging output
           echo "Extracted Subgraph Names: ${SUBGRAPH_NAMES[*]}"
           # Set environment variable with all subgraph names (comma-separated)
-          SUBGRAPH_LIST=$(IFS=,; echo "${SUBGRAPH_NAMES[*]}")
+          SUBGRAPH_LIST=$(IFS=,; echo "${SUBGRAPH_NAMES[@]}")
           echo "SUBGRAPH_NAMES=$SUBGRAPH_LIST" >> $GITHUB_ENV
 
   
