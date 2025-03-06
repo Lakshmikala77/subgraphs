@@ -149,26 +149,26 @@ jobs:
 
       # - name: Run Action for GCP Authentication
       #   uses: ./.github/actions/gcp_authentication
-        id: gcp-auth
+      #   id: gcp-auth
 
-      - id: 'get-credentials'
-        name: Set up GKE credentials
-        uses: google-github-actions/get-gke-credentials@v2
-        with:
-          cluster_name: ${{ env.GKE_CLUSTER }}
-          location: ${{ env.GKE_REGION }}
-          project_id: ${{env.GKE_PROJECT}}
+      # - id: 'get-credentials'
+      #   name: Set up GKE credentials
+      #   uses: google-github-actions/get-gke-credentials@v2
+      #   with:
+      #     cluster_name: ${{ env.GKE_CLUSTER }}
+      #     location: ${{ env.GKE_REGION }}
+      #     project_id: ${{env.GKE_PROJECT}}
 
-      - name: Install Helm
-        uses: azure/setup-helm@v4.2.0
-        with:
-          version: 'latest'
-        id: install
+      # - name: Install Helm
+      #   uses: azure/setup-helm@v4.2.0
+      #   with:
+      #     version: 'latest'
+      #   id: install
 
       ## Set Up Helm dependency ###
       - name: Setup Helm dependency
         run: |
-          cd helm/
+          # cd helm/
           echo "GITHUB_WORKSPACE = ${{ github.workspace }}"
           echo "Current directory: $(pwd)"
           helm dependency build ./${{ env.DEPLOYMENT_NAME }} 
@@ -185,11 +185,11 @@ jobs:
       - name: Helm dry run predev
         id: helm_dry_run_predev    
         run: |   
-          cd helm/
+          # cd helm/
           echo "Dev:AP=$DEV_AP"
-          helm install ${{ env.DEPLOYMENT_NAME }}-${{ env.REGION }}-${{ env.PREDEV_ENVIRONMENT }} ./${{ env.DEPLOYMENT_NAME }} --namespace=${{ env.PREDEV_NAMESPACE }} --values ./${{ env.DEPLOYMENT_NAME }}/${{ env.REGION }}/values.${{ env.PREDEV_ENVIRONMENT }}.yaml --dry-run --debug \
-            --set coprocessor-helm-chart.image.tag=$DEV_AP
-          # input="${{ vars.IMAGE_TAGS }}"
+          # helm install ${{ env.DEPLOYMENT_NAME }}-${{ env.REGION }}-${{ env.PREDEV_ENVIRONMENT }} ./${{ env.DEPLOYMENT_NAME }} --namespace=${{ env.PREDEV_NAMESPACE }} --values ./${{ env.DEPLOYMENT_NAME }}/${{ env.REGION }}/values.${{ env.PREDEV_ENVIRONMENT }}.yaml --dry-run --debug \
+          #   --set coprocessor-helm-chart.image.tag=$DEV_AP
+          # # input="${{ vars.IMAGE_TAGS }}"
 
           # # Change IFS to comma for splitting the input into services
           # IFS=',' read -r -a imageTagArray <<< "$input"
@@ -215,10 +215,10 @@ jobs:
       - name: Helm dry run dev
         id: helm_dry_run_dev    
         run: |    
-          cd helm/
+          # cd helm/
           echo "Dev:AP=$DEV_AP"
-          helm install ${{ env.DEPLOYMENT_NAME }}-${{ env.REGION }}-${{ env.ENVIRONMENT }} ./${{ env.DEPLOYMENT_NAME }} --namespace=${{ env.NAMESPACE }} --values ./${{ env.DEPLOYMENT_NAME }}/${{ env.REGION }}/values.${{ env.ENVIRONMENT }}.yaml --dry-run --debug \
-            --set coprocessor-helm-chart.image.tag=$DEV_AP
+          # helm install ${{ env.DEPLOYMENT_NAME }}-${{ env.REGION }}-${{ env.ENVIRONMENT }} ./${{ env.DEPLOYMENT_NAME }} --namespace=${{ env.NAMESPACE }} --values ./${{ env.DEPLOYMENT_NAME }}/${{ env.REGION }}/values.${{ env.ENVIRONMENT }}.yaml --dry-run --debug \
+          #   --set coprocessor-helm-chart.image.tag=$DEV_AP
           # input="${{ vars.IMAGE_TAGS }}"
 
           # # Change IFS to comma for splitting the input into services
@@ -247,29 +247,29 @@ jobs:
         run: |
           echo "helm Dry run successful for predev, proceeding to next step."           
           echo "Running Helm deployment to ${{ env.PREDEV_ENVIRONMENT }}"
-          cd helm/
+          # cd helm/
           echo "Dev: AP=$DEV_AP"
-          helm upgrade --install ${{ env.DEPLOYMENT_NAME }}-${{ env.REGION }}-${{ env.PREDEV_ENVIRONMENT }} ./${{ env.DEPLOYMENT_NAME }} \
-            --wait --atomic \
-            --namespace=${{ env.PREDEV_NAMESPACE }} \
-            --set coprocessor-helm-chart.image.tag=$DEV_AP \
-            --values ./${{ env.DEPLOYMENT_NAME }}/${{env.REGION }}/values.${{ env.PREDEV_ENVIRONMENT }}.yaml \
-            --timeout 15m \
-            --debug
+          # helm upgrade --install ${{ env.DEPLOYMENT_NAME }}-${{ env.REGION }}-${{ env.PREDEV_ENVIRONMENT }} ./${{ env.DEPLOYMENT_NAME }} \
+          #   --wait --atomic \
+          #   --namespace=${{ env.PREDEV_NAMESPACE }} \
+          #   --set coprocessor-helm-chart.image.tag=$DEV_AP \
+          #   --values ./${{ env.DEPLOYMENT_NAME }}/${{env.REGION }}/values.${{ env.PREDEV_ENVIRONMENT }}.yaml \
+          #   --timeout 15m \
+          #   --debug
           echo "helm Dry run successful for dev, proceeding to next step."           
           echo "Running Helm deployment to ${{ env.ENVIRONMENT }}"
                 
-          helm upgrade --install ${{ env.DEPLOYMENT_NAME }}-${{ env.REGION }}-${{ env.ENVIRONMENT }} ./${{ env.DEPLOYMENT_NAME }} \
-            --namespace=${{ env.NAMESPACE }} \
-            --set coprocessor-helm-chart.image.tag=$DEV_AP \
-            --values ./${{ env.DEPLOYMENT_NAME }}/${{env.REGION }}/values.${{ env.ENVIRONMENT }}.yaml \
-            --wait --atomic \
-            --timeout 15m   \
-            --debug  
-          if [[ $DEV_AP == 'latest' ]]; then
-            kubectl rollout restart deployments/${{ env.DEPLOYMENT_NAME }}-${{ env.REGION }}-${{ env.ENVIRONMENT }} -n ${{ env.NAMESPACE }}
-            kubectl rollout restart deployments/${{ env.DEPLOYMENT_NAME }}-${{ env.REGION }}-${{ env.PREDEV_ENVIRONMENT }} -n ${{ env.PREDEV_NAMESPACE }}
-          fi
+          # helm upgrade --install ${{ env.DEPLOYMENT_NAME }}-${{ env.REGION }}-${{ env.ENVIRONMENT }} ./${{ env.DEPLOYMENT_NAME }} \
+          #   --namespace=${{ env.NAMESPACE }} \
+          #   --set coprocessor-helm-chart.image.tag=$DEV_AP \
+          #   --values ./${{ env.DEPLOYMENT_NAME }}/${{env.REGION }}/values.${{ env.ENVIRONMENT }}.yaml \
+          #   --wait --atomic \
+          #   --timeout 15m   \
+          #   --debug  
+          # if [[ $DEV_AP == 'latest' ]]; then
+          #   kubectl rollout restart deployments/${{ env.DEPLOYMENT_NAME }}-${{ env.REGION }}-${{ env.ENVIRONMENT }} -n ${{ env.NAMESPACE }}
+          #   kubectl rollout restart deployments/${{ env.DEPLOYMENT_NAME }}-${{ env.REGION }}-${{ env.PREDEV_ENVIRONMENT }} -n ${{ env.PREDEV_NAMESPACE }}
+          # fi
           # input="${{ vars.IMAGE_TAGS }}"
 
           # # Change IFS to comma for splitting the input into services
