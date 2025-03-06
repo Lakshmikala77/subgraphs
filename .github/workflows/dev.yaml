@@ -394,17 +394,16 @@ jobs:
             while IFS= read -r line; do
               SUBGRAPH=$(echo "$line" | awk -F'`' '{print $2}' | tr -d '\r')
               if [[ -n "$SUBGRAPH" ]]; then
-                SUBGRAPH_NAMES+=("$SUBGRAPH")
+                SUBGRAPH_NAMES+=("\"$SUBGRAPH\"")
               fi
             done < <(echo "$PR_BODY" | grep -i "Subgraph Name:")
     
-            SUBGRAPH_JSON=$(printf '%s\n' "${SUBGRAPH_NAMES[@]}" | jq -R . | jq -s .)
+            # Convert to valid JSON array
+            SUBGRAPH_JSON=$(echo "[${SUBGRAPH_NAMES[*]}]" | jq -c .)
             echo "Extracted JSON: $SUBGRAPH_JSON"
-            echo "SUBGRAPH_NAMES_JSON=$SUBGRAPH_JSON" >> "$GITHUB_OUTPUT"
     
-        - name: Debug Outputs
-          run: |
-            echo "DEBUG: SUBGRAPH_NAMES_JSON=${{ steps.extract_subgraphs.outputs.SUBGRAPH_NAMES_JSON }}"
+            # Fix output format
+            echo "SUBGRAPH_NAMES_JSON=$SUBGRAPH_JSON" | tee -a "$GITHUB_OUTPUT"
 
   deploy:
       name: Deploy Coprocessor Applications
