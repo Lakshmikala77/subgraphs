@@ -408,10 +408,10 @@ jobs:
           for SUBGRAPH in "${SUBGRAPH_ARRAY[@]}"; do
             echo "Deploying Subgraph: $SUBGRAPH"
             echo "Dev:AP=$DEV_AP"
-            helm upgrade --install $SUBGRAPH ./helm/$SUBGRAPH \
-              --namespace=dev \
-              --set image.tag=latest \
-              --wait --atomic \
-              --timeout 10m \
-              --debug
+            # helm upgrade --install $SUBGRAPH ./helm/$SUBGRAPH \
+            #   --namespace=dev \
+            #   --set image.tag=latest \
+            #   --wait --atomic \
+            #   --timeout 10m \
+            #   --debug
           done
