@@ -82,17 +82,17 @@ jobs:
     #   uses: ./.github/actions/installing_packages
 
     ### npm Build Creation ###
-      - name: Create npm Build prior to docker image
-        run:
-          npm run build:production
+      # - name: Create npm Build prior to docker image
+      #   run:
+      #     npm run build:production
         env:
           INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     ## Docker Image Creation ###
       - name: Create docker image
-        run:
+        # run:
         # docker build -t ${{ env.DEPLOYMENT_NAME }} .
-          docker build -t ${{ env.DEPLOYMENT_NAME }} -f Dockerfile .
+          # docker build -t ${{ env.DEPLOYMENT_NAME }} -f Dockerfile .
         env:
           INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
