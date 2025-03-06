@@ -115,21 +115,21 @@ jobs:
       #   run: docker images
 
     ### Docker Image Tag ###
-      - name: Tag Docker image
-        run: |
-          docker tag ${{ env.DEPLOYMENT_NAME }}:latest ${{ env.GCP_AR_URL }}/${{ env.NAMESPACE }}/graphqlfederation-${{ env.DEPLOYMENT_NAME }}:${{ env.VERSION_NUMBER }}
-          docker tag ${{ env.DEPLOYMENT_NAME }}:latest ${{ env.GCP_AR_URL }}/${{ env.NAMESPACE }}/graphqlfederation-${{ env.DEPLOYMENT_NAME }}:latest
-          docker tag ${{ env.DEPLOYMENT_NAME }}:latest ${{ env.GCP_AR_URL }}/${{ env.PREDEV_NAMESPACE }}/graphqlfederation-${{ env.DEPLOYMENT_NAME }}:${{ env.VERSION_NUMBER }}
-          docker tag ${{ env.DEPLOYMENT_NAME }}:latest ${{ env.GCP_AR_URL }}/${{ env.PREDEV_NAMESPACE }}/graphqlfederation-${{ env.DEPLOYMENT_NAME }}:latest
+    #   - name: Tag Docker image
+    #     run: |
+    #       docker tag ${{ env.DEPLOYMENT_NAME }}:latest ${{ env.GCP_AR_URL }}/${{ env.NAMESPACE }}/graphqlfederation-${{ env.DEPLOYMENT_NAME }}:${{ env.VERSION_NUMBER }}
+    #       docker tag ${{ env.DEPLOYMENT_NAME }}:latest ${{ env.GCP_AR_URL }}/${{ env.NAMESPACE }}/graphqlfederation-${{ env.DEPLOYMENT_NAME }}:latest
+    #       docker tag ${{ env.DEPLOYMENT_NAME }}:latest ${{ env.GCP_AR_URL }}/${{ env.PREDEV_NAMESPACE }}/graphqlfederation-${{ env.DEPLOYMENT_NAME }}:${{ env.VERSION_NUMBER }}
+    #       docker tag ${{ env.DEPLOYMENT_NAME }}:latest ${{ env.GCP_AR_URL }}/${{ env.PREDEV_NAMESPACE }}/graphqlfederation-${{ env.DEPLOYMENT_NAME }}:latest
         
-    ### Pubishing Image to AR ###
-      - name: Push Docker image
-        run: |
-          gcloud auth configure-docker ${{ env.GKE_REGION }}-docker.pkg.dev
-          docker push ${{ env.GCP_AR_URL }}/${{ env.NAMESPACE }}/graphqlfederation-${{ env.DEPLOYMENT_NAME }}:${{env.VERSION_NUMBER}}
-          docker push ${{ env.GCP_AR_URL }}/${{ env.NAMESPACE }}/graphqlfederation-${{ env.DEPLOYMENT_NAME }}:latest
-          docker push ${{ env.GCP_AR_URL }}/${{ env.PREDEV_NAMESPACE }}/graphqlfederation-${{ env.DEPLOYMENT_NAME }}:${{env.VERSION_NUMBER}}
-          docker push ${{ env.GCP_AR_URL }}/${{ env.PREDEV_NAMESPACE }}/graphqlfederation-${{ env.DEPLOYMENT_NAME }}:latest
+    # ### Pubishing Image to AR ###
+    #   - name: Push Docker image
+    #     run: |
+    #       gcloud auth configure-docker ${{ env.GKE_REGION }}-docker.pkg.dev
+    #       docker push ${{ env.GCP_AR_URL }}/${{ env.NAMESPACE }}/graphqlfederation-${{ env.DEPLOYMENT_NAME }}:${{env.VERSION_NUMBER}}
+    #       docker push ${{ env.GCP_AR_URL }}/${{ env.NAMESPACE }}/graphqlfederation-${{ env.DEPLOYMENT_NAME }}:latest
+    #       docker push ${{ env.GCP_AR_URL }}/${{ env.PREDEV_NAMESPACE }}/graphqlfederation-${{ env.DEPLOYMENT_NAME }}:${{env.VERSION_NUMBER}}
+    #       docker push ${{ env.GCP_AR_URL }}/${{ env.PREDEV_NAMESPACE }}/graphqlfederation-${{ env.DEPLOYMENT_NAME }}:latest
 
   Deploy:
     name: Deploy Coprocessor Application to the Cluster
@@ -178,7 +178,7 @@ jobs:
         run: |
           PR_BODY=$(jq -r '.pull_request.body' < "$GITHUB_EVENT_PATH")
           echo "PR_BODY=$PR_BODY"
-          DEV_AP=$(echo "$PR_BODY" | grep -A 3 "Dev Environment" | grep "AP Region:" | awk -F'`' '{print $2}')
+          DEV_AP=$(echo "$PR_BODY" | grep -A 4 "Dev Environment" | grep "AP Region:" | awk -F'`' '{print $2}')
           echo "DEV_AP=$DEV_AP" >> $GITHUB_ENV
 
       # helm dry run and check for pre dev prior to helm upgrade
