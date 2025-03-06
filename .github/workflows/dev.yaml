@@ -22,39 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-  # build:
-  #   needs: tests_coverage
-  #   name: Build Coprocessor Applications
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     contents: read
-  #     id-token: write
-  #   outputs:
-  #     SUBGRAPH_NAMES: ${{ steps.extract_subgraphs.outputs.SUBGRAPH_NAMES_BASE64 }}
-  #   steps:
-  #     - name: Extract Subgraph Names from PR
-  #       id: extract_subgraphs
-  #       run: |
-  #         PR_BODY=$(jq -r '.pull_request.body' < "$GITHUB_EVENT_PATH")
-  #         echo "PR_BODY Content: $PR_BODY"
-
-  #         SUBGRAPH_NAMES=""
-  #         while IFS= read -r line; do
-  #           SUBGRAPH=$(echo "$line" | awk -F'`' '{print $2}' | tr -d '\r')
-  #           if [[ -n "$SUBGRAPH" ]]; then
-  #             SUBGRAPH_NAMES+="$SUBGRAPH "
-  #           fi
-  #         done < <(echo "$PR_BODY" | grep -i "Subgraph Name:")
-
-  #         SUBGRAPH_NAMES=$(echo "$SUBGRAPH_NAMES" | xargs) # Remove extra spaces
-  #         SUBGRAPH_NAMES_BASE64=$(echo -n "$SUBGRAPH_NAMES" | base64)
-
-  #         echo "Extracted Subgraph Names: $SUBGRAPH_NAMES"
-  #         echo "SUBGRAPH_NAMES=$SUBGRAPH_NAMES" >> $GITHUB_ENV
-  #         echo "SUBGRAPH_NAMES_BASE64=$SUBGRAPH_NAMES_BASE64" >> $GITHUB_ENV
-
-  #         echo "SUBGRAPH_NAMES=$SUBGRAPH_NAMES" >> "$GITHUB_OUTPUT"
-  #         echo "SUBGRAPH_NAMES_BASE64=$SUBGRAPH_NAMES_BASE64" >> "$GITHUB_OUTPUT"
+  
   build:
       needs: tests_coverage
       runs-on: ubuntu-latest
@@ -101,14 +69,21 @@ jobs:
       env:
         SUBGRAPH_NAME: ${{ needs.build.outputs.SUBGRAPH_NAME }}
       steps:
+        - name: Parse PR Body
+          run: |
+            PR_BODY=$(jq -r '.pull_request.body' < "$GITHUB_EVENT_PATH")
+            echo "PR_BODY Content: $PR_BODY"
+            DEV_AP=$(echo "$PR_BODY" | grep -A 4 "Dev Environment" | grep "AP Region:" | awk -F'`' '{print $2}')
+            echo "DEV_AP=$DEV_AP" >> GITHUB_ENV
         - name: Deploy Using Helm
           run: |
             echo "Subgraphs to deploy: $SUBGRAPH_NAME"
-    
+        
             # Iterate over each subgraph
             IFS=' ' read -r -a SUBGRAPH_ARRAY <<< "$SUBGRAPH_NAME"
             for SUBGRAPH in "${SUBGRAPH_ARRAY[@]}"; do
               echo "Deploying Subgraph: $SUBGRAPH"
+              echo "DEV: AP=$DEV_AP"
               # helm upgrade --install $SUBGRAPH ./helm/$SUBGRAPH \
               #   --namespace=dev \
               #   --set image.tag=latest \
