@@ -41,15 +41,15 @@ jobs:
           while IFS= read -r line; do
             SUBGRAPH=$(echo "$line" | awk -F'`' '{print $2}' | tr -d '\r')
             if [[ -n "$SUBGRAPH" ]]; then
-              SUBGRAPH_NAMES+=("\"$SUBGRAPH\"")
+              SUBGRAPH_NAMES+=("$SUBGRAPH")
             fi
           done < <(echo "$PR_BODY" | grep -i "Subgraph Name:")
 
-          # Convert array to valid JSON format
-          SUBGRAPH_JSON="[${SUBGRAPH_NAMES[*]}]"
+          # Convert array to valid JSON
+          SUBGRAPH_JSON=$(printf '%s\n' "${SUBGRAPH_NAMES[@]}" | jq -R . | jq -s .)
           echo "Extracted JSON: $SUBGRAPH_JSON"
 
-          # Fix GitHub Actions output formatting
+          # Store in GitHub Actions output
           echo "SUBGRAPH_NAMES_JSON=$SUBGRAPH_JSON" >> "$GITHUB_OUTPUT"
 
   deploy:
