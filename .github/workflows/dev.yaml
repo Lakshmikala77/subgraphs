@@ -354,17 +354,19 @@ jobs:
         run: |
           PR_BODY=$(jq -r '.pull_request.body' < "$GITHUB_EVENT_PATH")
           echo "PR_BODY Content: $PR_BODY"
-          
-          SUBGRAPH_NAMES=()
+
+          SUBGRAPH_NAMES=""
           while IFS= read -r line; do
             SUBGRAPH=$(echo "$line" | awk -F'`' '{print $2}' | tr -d '\r')
             if [[ -n "$SUBGRAPH" ]]; then
-              SUBGRAPH_NAMES+=("$SUBGRAPH")
+              SUBGRAPH_NAMES+="$SUBGRAPH "
             fi
           done < <(echo "$PR_BODY" | grep -i "Subgraph Name:")
 
-          echo "Extracted Subgraph Names: ${SUBGRAPH_NAMES[*]}"
-          echo "SUBGRAPH_NAMES=${SUBGRAPH_NAMES[*]}" >> $GITHUB_ENV
+          SUBGRAPH_NAMES=$(echo "$SUBGRAPH_NAMES" | xargs) # Remove extra spaces
+          echo "Extracted Subgraph Names: $SUBGRAPH_NAMES"
+          echo "SUBGRAPH_NAMES=$SUBGRAPH_NAMES" >> $GITHUB_ENV
+          echo "::set-output name=SUBGRAPH_NAMES::$SUBGRAPH_NAMES"
 
       - name: Build and Push Docker Images
         run: |
