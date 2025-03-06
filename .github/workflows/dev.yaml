@@ -369,8 +369,8 @@ jobs:
           IFS=' ' read -r -a SUBGRAPH_ARRAY <<< "${{ env.SUBGRAPH_NAMES }}"
           for SUBGRAPH in "${SUBGRAPH_ARRAY[@]}"; do
             echo "Building Docker Image for Subgraph: $SUBGRAPH"
-            docker build -t gcr.io/my-project/$SUBGRAPH:latest .
-            docker push gcr.io/my-project/$SUBGRAPH:latest
+            # docker build -t gcr.io/my-project/$SUBGRAPH:latest .
+            # docker push gcr.io/my-project/$SUBGRAPH:latest
           done
 
   deploy:
