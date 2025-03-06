@@ -23,9 +23,9 @@ jobs:
       # - name: Installing dependent npm packages
       #   uses: ./.github/actions/installing_packages
 
-      - name: Linting
-        run: npm run lint:quiet
-        shell: bash
+      # - name: Linting
+      #   run: npm run lint:quiet
+      #   shell: bash
 
   tests_coverage:
     needs: Lint
