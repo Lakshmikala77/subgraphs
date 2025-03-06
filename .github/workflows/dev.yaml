@@ -52,7 +52,8 @@ jobs:
         run: |
           PR_BODY=$(jq -r '.pull_request.body' < "$GITHUB_EVENT_PATH")
           echo "PR_BODY Content: $PR_BODY" # Debugging output
-          SUBGRAPH_NAME=$(echo "$PR_BODY" | grep -i "Subgraph Name:" | head -n 1 | sed -E 's/Subgraph Name:[[:space:]]*`([^`]*)`/\1/' | tr -d '\r')
+          # SUBGRAPH_NAME=$(echo "$PR_BODY" | grep -i "Subgraph Name:" | head -n 1 | sed -E 's/Subgraph Name:[[:space:]]*`([^`]*)`/\1/' | tr -d '\r')
+          SUBGRAPH_NAME=$(echo "$PR_BODY" | grep -i "Subgraph Name:" | head -n 1 | awk -F'`' '{print $2}' | tr -d '\r')
           if [[ -z "$SUBGRAPH_NAME" ]]; then
             echo "Error: No Subgraph Name found in PR description."
             exit 1
