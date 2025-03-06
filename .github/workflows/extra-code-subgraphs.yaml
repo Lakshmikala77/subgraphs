@@ -41,15 +41,15 @@ jobs:
           while IFS= read -r line; do
             SUBGRAPH=$(echo "$line" | awk -F'`' '{print $2}' | tr -d '\r')
             if [[ -n "$SUBGRAPH" ]]; then
-              SUBGRAPH_NAMES+=("$SUBGRAPH")
+              SUBGRAPH_NAMES+=("\"$SUBGRAPH\"")  # Ensure valid JSON string format
             fi
           done < <(echo "$PR_BODY" | grep -i "Subgraph Name:")
 
-          # Convert array to valid JSON
-          SUBGRAPH_JSON=$(printf '%s\n' "${SUBGRAPH_NAMES[@]}" | jq -R . | jq -s .)
+          # Convert array to JSON (compact format)
+          SUBGRAPH_JSON=$(echo "[${SUBGRAPH_NAMES[*]}]" | jq -c .)
           echo "Extracted JSON: $SUBGRAPH_JSON"
 
-          # Store in GitHub Actions output
+          # Store output safely
           echo "SUBGRAPH_NAMES_JSON=$SUBGRAPH_JSON" >> "$GITHUB_OUTPUT"
 
   deploy:
@@ -63,20 +63,6 @@ jobs:
       matrix:
         subgraph: ${{ fromJson(needs.build.outputs.subgraph_names_json) }}
     steps:
-      - name: Parse PR Body
-        run: |
-          PR_BODY=$(jq -r '.pull_request.body' < "$GITHUB_EVENT_PATH")
-          echo "PR_BODY Content: $PR_BODY"
-          DEV_AP=$(echo "$PR_BODY" | grep -A 4 "Dev Environment" | grep "AP Region:" | awk -F'`' '{print $2}')
-          echo "DEV_AP=$DEV_AP" >> GITHUB_ENV
-
       - name: Deploy Using Helm
         run: |
           echo "Deploying Subgraph: ${{ matrix.subgraph }}"
-          echo "DEV: AP=$DEV_AP"
-          # helm upgrade --install ${{ matrix.subgraph }} ./helm/${{ matrix.subgraph }} \
-          #   --namespace=dev \
-          #   --set image.tag=latest \
-          #   --wait --atomic \
-          #   --timeout 10m \
-          #   --debug
