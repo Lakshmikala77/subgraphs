@@ -51,15 +51,21 @@ jobs:
         id: extract_subgraph
         run: |
           PR_BODY=$(jq -r '.pull_request.body' < "$GITHUB_EVENT_PATH")
-          echo "PR_BODY Content: $PR_BODY" # Debugging output
-          # SUBGRAPH_NAME=$(echo "$PR_BODY" | grep -i "Subgraph Name:" | head -n 1 | sed -E 's/Subgraph Name:[[:space:]]*`([^`]*)`/\1/' | tr -d '\r')
-          SUBGRAPH_NAME=$(echo "$PR_BODY" | grep -i "Subgraph Name:" | head -n 1 | awk -F'`' '{print $2}' | tr -d '\r')
-          if [[ -z "$SUBGRAPH_NAME" ]]; then
-            echo "Error: No Subgraph Name found in PR description."
-            exit 1
-          fi
-          echo "Extracted Subgraph Name: $SUBGRAPH_NAME"
-          echo "SUBGRAPH_NAME=$SUBGRAPH_NAME" >> $GITHUB_ENV
+          echo "PR_BODY Content: $PR_BODY"  # Debugging output
+          # Extract all subgraph names
+          SUBGRAPH_NAMES=()
+          while IFS= read -r line; do
+            SUBGRAPH=$(echo "$line" | awk -F'`' '{print $2}' | tr -d '\r')
+            if [[ -n "$SUBGRAPH" ]]; then
+              SUBGRAPH_NAMES+=("$SUBGRAPH")
+            fi
+          done < <(echo "$PR_BODY" | grep -i "Subgraph Name:")
+          # Debugging output
+          echo "Extracted Subgraph Names: ${SUBGRAPH_NAMES[*]}"
+          # Set environment variable with all subgraph names (comma-separated)
+          SUBGRAPH_LIST=$(IFS=,; echo "${SUBGRAPH_NAMES[*]}")
+          echo "SUBGRAPH_NAMES=$SUBGRAPH_LIST" >> $GITHUB_ENV
+
   
 
 
