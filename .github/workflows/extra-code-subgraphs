@@ -23,37 +23,34 @@ jobs:
 
   build:
     needs: tests_coverage
-    name: Build Coprocessor Applications
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
+    outputs:
+      subgraph_names_json: ${{ steps.extract_subgraphs.outputs.SUBGRAPH_NAMES_JSON }}
     steps:
       - name: Extract Subgraph Names from PR
         id: extract_subgraphs
         run: |
           PR_BODY=$(jq -r '.pull_request.body' < "$GITHUB_EVENT_PATH")
           echo "PR_BODY Content: $PR_BODY"
-          
+
+          # Extract subgraph names
           SUBGRAPH_NAMES=()
           while IFS= read -r line; do
             SUBGRAPH=$(echo "$line" | awk -F'`' '{print $2}' | tr -d '\r')
             if [[ -n "$SUBGRAPH" ]]; then
-              SUBGRAPH_NAMES+=("$SUBGRAPH")
+              SUBGRAPH_NAMES+=("\"$SUBGRAPH\"")
             fi
           done < <(echo "$PR_BODY" | grep -i "Subgraph Name:")
 
-          echo "Extracted Subgraph Names: ${SUBGRAPH_NAMES[*]}"
-          echo "SUBGRAPH_NAMES=${SUBGRAPH_NAMES[*]}" >> $GITHUB_ENV
+          # Convert array to valid JSON format
+          SUBGRAPH_JSON="[${SUBGRAPH_NAMES[*]}]"
+          echo "Extracted JSON: $SUBGRAPH_JSON"
 
-      - name: Build and Push Docker Images
-        run: |
-          IFS=' ' read -r -a SUBGRAPH_ARRAY <<< "${{ env.SUBGRAPH_NAMES }}"
-          for SUBGRAPH in "${SUBGRAPH_ARRAY[@]}"; do
-            echo "Building Docker Image for Subgraph: $SUBGRAPH"
-            docker build -t gcr.io/my-project/$SUBGRAPH:latest .
-            docker push gcr.io/my-project/$SUBGRAPH:latest
-          done
+          # Fix GitHub Actions output formatting
+          echo "SUBGRAPH_NAMES_JSON=$SUBGRAPH_JSON" >> "$GITHUB_OUTPUT"
 
   deploy:
     name: Deploy Coprocessor Applications
@@ -62,18 +59,24 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    strategy:
+      matrix:
+        subgraph: ${{ fromJson(needs.build.outputs.subgraph_names_json) }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Parse PR Body
+        run: |
+          PR_BODY=$(jq -r '.pull_request.body' < "$GITHUB_EVENT_PATH")
+          echo "PR_BODY Content: $PR_BODY"
+          DEV_AP=$(echo "$PR_BODY" | grep -A 4 "Dev Environment" | grep "AP Region:" | awk -F'`' '{print $2}')
+          echo "DEV_AP=$DEV_AP" >> GITHUB_ENV
 
       - name: Deploy Using Helm
         run: |
-          IFS=' ' read -r -a SUBGRAPH_ARRAY <<< "${{ env.SUBGRAPH_NAMES }}"
-          for SUBGRAPH in "${SUBGRAPH_ARRAY[@]}"; do
-            echo "Deploying Subgraph: $SUBGRAPH"
-            helm upgrade --install $SUBGRAPH ./helm/$SUBGRAPH \
-              --namespace=dev \
-              --set image.tag=latest \
-              --wait --atomic \
-              --timeout 10m \
-              --debug
-          done
+          echo "Deploying Subgraph: ${{ matrix.subgraph }}"
+          echo "DEV: AP=$DEV_AP"
+          # helm upgrade --install ${{ matrix.subgraph }} ./helm/${{ matrix.subgraph }} \
+          #   --namespace=dev \
+          #   --set image.tag=latest \
+          #   --wait --atomic \
+          #   --timeout 10m \
+          #   --debug
