@@ -1,4 +1,5 @@
-name: Coprocessor (ap, dev) deploy.
+
+name: Multiple subgraph deploy.
 
 on:
   pull_request:
@@ -21,48 +22,64 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+ 
   build:
-    needs: tests_coverage
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    outputs:
-      subgraph_names_json: ${{ steps.extract_subgraphs.outputs.SUBGRAPH_NAMES_JSON }}
-    steps:
-      - name: Extract Subgraph Names from PR
-        id: extract_subgraphs
-        run: |
-          PR_BODY=$(jq -r '.pull_request.body' < "$GITHUB_EVENT_PATH")
-          echo "PR_BODY Content: $PR_BODY"
-
-          # Extract subgraph names
-          SUBGRAPH_NAMES=()
-          while IFS= read -r line; do
-            SUBGRAPH=$(echo "$line" | awk -F'`' '{print $2}' | tr -d '\r')
-            if [[ -n "$SUBGRAPH" ]]; then
-              SUBGRAPH_NAMES+=("\"$SUBGRAPH\"")  # Ensure valid JSON string format
-            fi
-          done < <(echo "$PR_BODY" | grep -i "Subgraph Name:")
-
-          # Convert array to JSON (compact format)
-          SUBGRAPH_JSON=$(echo "[${SUBGRAPH_NAMES[*]}]" | jq -c .)
-          echo "Extracted JSON: $SUBGRAPH_JSON"
-
-          # Store output safely
-          echo "SUBGRAPH_NAMES_JSON=$SUBGRAPH_JSON" >> "$GITHUB_OUTPUT"
+      needs: tests_coverage
+      runs-on: ubuntu-latest
+      permissions:
+        contents: read
+        id-token: write
+      outputs:
+        subgraph_names_json: ${{ steps.extract_subgraphs.outputs.SUBGRAPH_NAMES_JSON }}
+      steps:
+        - name: Extract Subgraph Names from PR
+          id: extract_subgraphs
+          run: |
+            PR_BODY=$(jq -r '.pull_request.body' < "$GITHUB_EVENT_PATH")
+            echo "PR_BODY Content: $PR_BODY"
+    
+            
+    
+            SUBGRAPH_NAMES=()
+            while IFS= read -r line; do
+              SUBGRAPH=$(echo "$line" | awk -F'`' '{print $2}' | tr -d '\r')
+              if [[ -n "$SUBGRAPH" ]]; then
+                SUBGRAPH_NAMES+=("$SUBGRAPH")
+              fi
+            done < <(echo "$PR_BODY" | grep -i "Subgraph Name:")
+    
+            # Convert to valid JSON array
+            SUBGRAPH_JSON=$(printf '%s\n' "${SUBGRAPH_NAMES[@]}" | jq -R . | jq -s .)
+            echo "Extracted JSON: $SUBGRAPH_JSON"
+    
+            # Fix GitHub Actions output formatting
+            echo "SUBGRAPH_NAMES_JSON<<EOF" >> "$GITHUB_OUTPUT"
+            echo "$SUBGRAPH_JSON" >> "$GITHUB_OUTPUT"
+            echo "EOF" >> "$GITHUB_OUTPUT"
 
   deploy:
-    name: Deploy Coprocessor Applications
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      contents: read
-      id-token: write
-    strategy:
-      matrix:
-        subgraph: ${{ fromJson(needs.build.outputs.subgraph_names_json) }}
-    steps:
-      - name: Deploy Using Helm
-        run: |
-          echo "Deploying Subgraph: ${{ matrix.subgraph }}"
+      name: Deploy Coprocessor Applications
+      runs-on: ubuntu-latest
+      needs: build
+      permissions:
+        contents: read
+        id-token: write
+      strategy:
+        matrix:
+          subgraph: ${{ fromJson(needs.build.outputs.subgraph_names_json) }}
+      steps:
+        - name: Debug Subgraph Names
+          run: |
+            echo "Received Subgraph: ${{ matrix.subgraph }}"
+        - name: Parse PR Body
+          id: parse_pr
+          run: |
+            PR_BODY=$(jq -r '.pull_request.body' < "$GITHUB_EVENT_PATH")
+            echo "PR_BODY Content: $PR_BODY"
+            DEV_AP=$(echo "$PR_BODY" | grep -A 4 "Dev Environment" | grep "AP Region:" | awk -F'`' '{print $2}')
+            echo "DEV_AP=$DEV_AP" >> $GITHUB_ENV
+        - name: Deploy Using Helm
+          run: |
+            echo "Deploying Subgraph: ${{ matrix.subgraph }}"
+            echo "Dev:AP=$DEV_AP"
+            
