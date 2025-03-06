@@ -51,8 +51,16 @@ jobs:
         id: extract_subgraph
         run: |
           PR_BODY=$(jq -r '.pull_request.body' < "$GITHUB_EVENT_PATH")
-          SUBGRAPH_NAME=$(echo "$PR_BODY" | grep -i "Subgraph Name:" | awk -F'`' '{print $2}')
+          echo "PR_BODY Content: $PR_BODY" # Debugging output
+          SUBGRAPH_NAME=$(echo "$PR_BODY" | grep -i "Subgraph Name:" | head -n 1 | sed -E 's/Subgraph Name:[[:space:]]*`([^`]*)`/\1/' | tr -d '\r')
+          if [[ -z "$SUBGRAPH_NAME" ]]; then
+            echo "Error: No Subgraph Name found in PR description."
+            exit 1
+          fi
+          echo "Extracted Subgraph Name: $SUBGRAPH_NAME"
           echo "SUBGRAPH_NAME=$SUBGRAPH_NAME" >> $GITHUB_ENV
+  
+
 
     # - name: Checkout repository
     #   uses: actions/checkout@v4
