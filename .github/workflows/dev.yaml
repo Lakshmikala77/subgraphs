@@ -387,8 +387,7 @@ jobs:
             PR_BODY=$(jq -r '.pull_request.body' < "$GITHUB_EVENT_PATH")
             echo "PR_BODY Content: $PR_BODY"
     
-            DEV_AP=$(echo "$PR_BODY" | grep -A 4 "Dev Environment" | grep "AP Region:" | awk -F'`' '{print $2}')
-            echo "DEV_AP=$DEV_AP" >> $GITHUB_ENV
+            
     
             SUBGRAPH_NAMES=()
             while IFS= read -r line; do
@@ -421,7 +420,13 @@ jobs:
         - name: Debug Subgraph Names
           run: |
             echo "Received Subgraph: ${{ matrix.subgraph }}"
-    
+        - name: Parse PR Body
+          id: parse_pr
+          run: |
+            PR_BODY=$(jq -r '.pull_request.body' < "$GITHUB_EVENT_PATH")
+            echo "PR_BODY Content: $PR_BODY"
+            DEV_AP=$(echo "$PR_BODY" | grep -A 4 "Dev Environment" | grep "AP Region:" | awk -F'`' '{print $2}')
+            echo "DEV_AP=$DEV_AP" >> $GITHUB_ENV
         - name: Deploy Using Helm
           run: |
             echo "Deploying Subgraph: ${{ matrix.subgraph }}"
