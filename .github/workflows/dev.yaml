@@ -346,6 +346,8 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    outputs:
+      SUBGRAPH_NAMES: ${{ steps.extract_subgraphs.outputs.SUBGRAPH_NAMES }}
     steps:
       - name: Extract Subgraph Names from PR
         id: extract_subgraphs
@@ -380,6 +382,8 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    outputs:
+      SUBGRAPH_NAMES: ${{ steps.extract_subgraphs.outputs.SUBGRAPH_NAMES }}
     steps:
       - uses: actions/checkout@v4
       - name: Parse and Validate PR Body
