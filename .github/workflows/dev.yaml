@@ -67,10 +67,10 @@ jobs:
     ### Printing Variables for Testing ###
       - name: Print AP DEV Environmental Variables    
         run: |
-          echo ${{ env.GKE_PROJECT }}
-          echo ${{ env.NAMESPACE }}
-          echo ${{ env.FAST_SERVICE_ACCOUNT }}
-          echo ${{ env.GCP_SERVICE_ACCOUNT }}
+          # echo ${{ env.GKE_PROJECT }}
+          # echo ${{ env.NAMESPACE }}
+          # echo ${{ env.FAST_SERVICE_ACCOUNT }}
+          # echo ${{ env.GCP_SERVICE_ACCOUNT }}
           echo ${{ env.REGION }}
 
 
@@ -85,16 +85,16 @@ jobs:
       # - name: Create npm Build prior to docker image
       #   run:
       #     npm run build:production
-        env:
-          INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #     env:
+    #       INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    ## Docker Image Creation ###
-      - name: Create docker image
-        # run:
-        # docker build -t ${{ env.DEPLOYMENT_NAME }} .
-          # docker build -t ${{ env.DEPLOYMENT_NAME }} -f Dockerfile .
-        env:
-          INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # ## Docker Image Creation ###
+    #   - name: Create docker image
+    #     # run:
+    #     # docker build -t ${{ env.DEPLOYMENT_NAME }} .
+    #       # docker build -t ${{ env.DEPLOYMENT_NAME }} -f Dockerfile .
+    #     env:
+    #       INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     ### Authenticate to Artifact Registry ###
       # - name: Configure Docker CLI
@@ -102,8 +102,8 @@ jobs:
       #     gcloud auth list
       #     gcloud auth configure-docker ${{ env.GCP_AR_URL }} -q
 
-      - name: Docker list
-        run: docker images
+      # - name: Docker list
+      #   run: docker images
 
     ### Docker Image Tag ###
       - name: Tag Docker image
