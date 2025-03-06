@@ -380,6 +380,7 @@ jobs:
         id-token: write
       outputs:
         subgraph_names_json: ${{ steps.extract_subgraphs.outputs.SUBGRAPH_NAMES_JSON }}
+        SUBGRAPH_NAME: ${{ fromJson(needs.build.outputs.subgraph_names_json) }}
       steps:
         - name: Extract Subgraph Names from PR
           id: extract_subgraphs
@@ -405,6 +406,11 @@ jobs:
             echo "SUBGRAPH_NAMES_JSON<<EOF" >> "$GITHUB_OUTPUT"
             echo "$SUBGRAPH_JSON" >> "$GITHUB_OUTPUT"
             echo "EOF" >> "$GITHUB_OUTPUT"
+        ### Printing Variables for Testing ###
+        - run: |
+            echo ${{ env.SUBGRAPH_NAME }}
+            echo ${{ env.REGION }}
+
 
   deploy:
       name: Deploy Coprocessor Applications
