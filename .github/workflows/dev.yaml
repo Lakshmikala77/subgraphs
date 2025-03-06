@@ -166,12 +166,12 @@ jobs:
       #   id: install
 
       ## Set Up Helm dependency ###
-      - name: Setup Helm dependency
-        run: |
-          # cd helm/
-          echo "GITHUB_WORKSPACE = ${{ github.workspace }}"
-          echo "Current directory: $(pwd)"
-          helm dependency build ./${{ env.DEPLOYMENT_NAME }} 
+      # - name: Setup Helm dependency
+      #   run: |
+      #     # cd helm/
+      #     echo "GITHUB_WORKSPACE = ${{ github.workspace }}"
+      #     echo "Current directory: $(pwd)"
+      #     helm dependency build ./${{ env.DEPLOYMENT_NAME }} 
             
       - name: Parse and Validate PR Body
         id: parse_pr
