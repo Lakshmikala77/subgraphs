@@ -398,12 +398,14 @@ jobs:
               fi
             done < <(echo "$PR_BODY" | grep -i "Subgraph Name:")
     
-            # Correctly format JSON array
+            # Convert to valid JSON array
             SUBGRAPH_JSON=$(printf '%s\n' "${SUBGRAPH_NAMES[@]}" | jq -R . | jq -s .)
             echo "Extracted JSON: $SUBGRAPH_JSON"
     
-            # Fix output format
-            echo "SUBGRAPH_NAMES_JSON=$SUBGRAPH_JSON" >> "$GITHUB_OUTPUT"
+            # Fix GitHub Actions output formatting
+            echo "SUBGRAPH_NAMES_JSON<<EOF" >> "$GITHUB_OUTPUT"
+            echo "$SUBGRAPH_JSON" >> "$GITHUB_OUTPUT"
+            echo "EOF" >> "$GITHUB_OUTPUT"
 
   deploy:
       name: Deploy Coprocessor Applications
