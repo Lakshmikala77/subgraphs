@@ -5,8 +5,7 @@
 - **AP Region:** ``
 - **EU Region:** ``
 - **US Region:** ``
-
-- **Subgraph Name:** `SearchsubGraph`
+- **Subgraph Name:** `SearchGraph`
 - **AP Region:** ``
 - **EU Region:** ``
 - **US Region:** ``

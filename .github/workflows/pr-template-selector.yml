@@ -1,8 +1,7 @@
 name: FedGQL PR Template Selector
 on:
   pull_request:
-    types: [opened, edited, synchronized]
-
+    types: [opened]
 permissions:
   contents: write
   pull-requests: write
